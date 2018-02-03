@@ -36,7 +36,7 @@ get_fillword = ->
 stutter = (text) ->
   ret = ""
   for word in text.split " "
-    if (do_random(1) == 0)
+    if (do_random(2) == 0)
       ret = ret + ' ' + get_fillword() + ' , '
 
     ret = ret + ' ' + word
@@ -60,17 +60,20 @@ moron = (text) ->
   for word in text.split ' '
     if (do_random(2) == 0)
       chars = word.split ''
-      ret = repeat_single_char(chars).join ''
+      ret = ret + ' ' + repeat_single_char(chars).join ''
     else
-      ret = word
+      ret = ret + ' ' +  word
+  return ret
+
+dau = (text) ->
+  text = text.toUpperCase()
+  text = moron(text)
+  text = eol(text)
+  text = stutter(text)
+  return text
 
 module.exports = (robot) ->
   robot.hear /^[\.!]dau\s(.*)/i, (res) ->
-    text = res.match[1]
-    text = text.toUpperCase()
-    text = moron(text)
-    text = eol(text)
-    text = stutter(text)
-
+    text = dau(res.match[1])
 
     res.send "#{text}"
