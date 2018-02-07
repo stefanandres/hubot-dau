@@ -72,8 +72,46 @@ dau = (text) ->
   text = stutter(text)
   return text
 
+updatetext = (robot, res, roomid, msgid, text) ->
+  data = JSON.stringify({
+    user: process.env.ROCKETCHAT_USER,
+    password: process.env.ROCKETCHAT_PASSWORD,
+  })
+
+  # Get Auth token
+  robot.http("#{process.env.ROCKETCHAT_URL}/api/v1/login")
+    .header('Content-Type', 'application/json')
+    .post(data) (err, response, body) ->
+      if err
+        res.send "Encountered an error :( #{err}"
+        return
+
+      ret = JSON.parse body
+      authtoken = ret['data']['authToken']
+      userid = ret['data']['userId']
+
+      # Rewrite original message with updated text
+      data = JSON.stringify({
+        'roomId': roomid,
+        'msgId': msgid,
+        'text': text,
+      })
+      robot.http("#{process.env.ROCKETCHAT_URL}/api/v1/chat.update")
+        .headers('Content-Type': 'application/json', 'X-Auth-Token': authtoken, 'X-User-Id': userid)
+        .post(data) (err, response, body) ->
+          if err
+            res.send "Encountered an error :( #{err}"
+            return
+          console.log("got: #{body}")
+
+
 module.exports = (robot) ->
   robot.hear /^[\.!]dau\s(.*)/i, (res) ->
     text = dau(res.match[1])
 
-    res.send "#{text}"
+    console.log("dau: #{text}")
+
+    msgid=res.envelope.message['id']
+    roomid=res.envelope.user['roomID']
+
+    updatetext(robot, res, roomid, msgid, text)
