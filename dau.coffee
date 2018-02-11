@@ -23,8 +23,13 @@ do_random = (x) ->
 
 
 eol = (text) ->
-  ret = text +  ' !!!??!!!!!????!??????????!!!1'
-  return ret
+  base = ' !?!?!?!1'
+  chars = base.split ''
+  for x in [1..5]
+    chars = repeat_single_char(chars, rand=3)
+
+  ret = chars.join ''
+  return text + ret
 
 
 get_fillword = ->
@@ -44,15 +49,12 @@ stutter = (text) ->
   return ret
 
 
-repeat_single_char = (chars) ->
-  if (do_random(4) == 0)
-    random_index = do_random(chars.length)
-    random_char = chars[random_index]
-    new_char = repeat(random_char, 1+do_random(1))
-    chars.splice(random_index, 0, new_char)
-    return chars
-  else
-    return chars
+repeat_single_char = (chars, rand = 1) ->
+  random_index = do_random(chars.length)
+  random_char = chars[random_index]
+  new_char = repeat(random_char, 1+do_random(rand))
+  chars.splice(random_index, 0, new_char)
+  return chars
 
 
 moron = (text) ->
@@ -60,7 +62,9 @@ moron = (text) ->
   for word in text.split ' '
     if (do_random(2) == 0)
       chars = word.split ''
-      ret = ret + ' ' + repeat_single_char(chars).join ''
+      if (do_random(4) == 0)
+        ret = ret + ' ' + repeat_single_char(chars).join ''
+      ret = ret + ' ' +  word
     else
       ret = ret + ' ' +  word
   return ret
@@ -68,8 +72,8 @@ moron = (text) ->
 dau = (text) ->
   text = text.toUpperCase()
   text = moron(text)
-  text = eol(text)
   text = stutter(text)
+  text = eol(text)
   return text
 
 updatetext = (robot, res, roomid, msgid, text) ->
