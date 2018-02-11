@@ -5,7 +5,7 @@
 #   None
 #
 # Commands:
-#   .dau mytext - Write like an idiot
+#   .dau <mytext> - Write like an idiot
 #
 # Notes:
 #   None
@@ -22,7 +22,39 @@ do_random = (x) ->
   return (Math.floor(Math.random() * x) % x)
 
 
+switchchars = (word) ->
+  # Switch neighbour Characters
+  # e.g. "hello" becomes "ehllo"
+
+  chars = word.split ''
+  first = do_random(chars.length)
+  # We want to add +1, so it cannot be the last element
+  if (first == (chars.length - 1))
+    first = first - 1
+  second = first + 1
+  # Swap characters
+  tmp = chars[first]
+  chars[first] = chars[second]
+  chars[second] = tmp
+
+  return chars.join ''
+
+
+misspell = (text) ->
+  # Misspell words 1/4 of the time
+  ret = ''
+  for word in text.split " "
+    if (do_random(4) == 0)
+      ret = ret + ' ' + switchchars(word)
+    else
+      ret = ret + ' ' + word
+
+  return ret
+
+
 eol = (text) ->
+  # Add end-of-line exclamations
+
   base = ' !?!?!?!1'
   chars = base.split ''
   for x in [1..5]
@@ -39,7 +71,8 @@ get_fillword = ->
 
 
 stutter = (text) ->
-  ret = ""
+  # Insert get_fillword() every 50% of time to the text
+  ret = ''
   for word in text.split " "
     if (do_random(2) == 0)
       ret = ret + ' ' + get_fillword() + ' , '
@@ -50,6 +83,7 @@ stutter = (text) ->
 
 
 repeat_single_char = (chars, rand = 1) ->
+  # Reateat a single character in a word $rand-times
   random_index = do_random(chars.length)
   random_char = chars[random_index]
   new_char = repeat(random_char, 1+do_random(rand))
@@ -67,10 +101,13 @@ moron = (text) ->
       ret = ret + ' ' +  word
     else
       ret = ret + ' ' +  word
+
   return ret
 
 dau = (text) ->
+  # Add all idiot styles together
   text = text.toUpperCase()
+  text = misspell(text)
   text = moron(text)
   text = stutter(text)
   text = eol(text)
